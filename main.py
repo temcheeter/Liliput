@@ -105,16 +105,14 @@ def tt_saver2(message):
 # enable
 @bot.message_handler(func=lambda message: message.text == '✅ Включить')
 def enable_parrot(message):
-    global parrot
-    parrot = True
+    data.parrot(message, True)
     bot.send_message(message.chat.id, 'Пернатый подключён 🦜', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 
 # disable
 @bot.message_handler(func=lambda message: message.text == '❌ Отключить')
 def disable_parrot(message):
-    global parrot
-    parrot = False
+    data.parrot(message, False)
     bot.send_message(message.chat.id, 'Пернатый отключён 🦜', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 
@@ -124,8 +122,11 @@ def disable_parrot(message):
 @bot.message_handler(content_types=['text'], func=lambda message: message.from_user.first_name != 'Бибан')
 def spy(message):
     bot.send_message(my_id, f'Текст: {message.text}\nОтправитель: {message.from_user.first_name}\nID чата отправителя: {message.chat.id}\n\n')
+
+
+
+@bot.message_handler(content_types=['text'], func=data.is_parrot)
 def repeat_message(message):
-    if parrot:
         bot.send_message(message.chat.id, message.text)
 
 
@@ -135,7 +136,7 @@ def repeat_message(message):
 @bot.message_handler(content_types=['sticker'])
 def sticker(message):
     bot.send_sticker(my_id, message.sticker.file_id)
-    if parrot:
+    if data.is_parrot(message):
         bot.send_sticker(message.chat.id, message.sticker.file_id)
 
 
