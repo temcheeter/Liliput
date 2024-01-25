@@ -1,4 +1,26 @@
+# _*_ coding: utf-8 _*_
 import json
+
+
+
+def read_json(file_name='database.json'):
+    try:
+        with open(file_name, 'r', encoding='utf8') as f:
+            return json.load(f)
+    except:
+        return {}
+
+def write_json(data, type='w', file_name='database.json'):
+    with open(file_name, type, encoding='utf8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def del_action(id):
+    data = read_json()
+    data[id]['action'] = None
+    write_json(data)
+
+
+
 def video_load(message, response, success):
     with open('tiktok_data.json', 'a', encoding='utf8') as f:
         video_data = {'user': {'id': message.chat.id, 'name': message.from_user.first_name}, 'play': {'video': response['data']['hdplay'], 'audio': response['data']['music']}, 'success': success}

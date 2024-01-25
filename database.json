@@ -1,6 +1,7 @@
 {
   "6094444931": {
     "name": "Бибан",
-    "parrot": false
+    "parrot": false,
+    "action": null
   }
 }

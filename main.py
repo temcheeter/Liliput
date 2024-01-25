@@ -2,10 +2,10 @@ import telebot
 from time import sleep
 import requests
 import database as data
+from kandinsky import img_generation
 token = '6335870150:AAG26JRjEaZacUrzlwTayYQXaBKMuU-t-Ac'
 bot = telebot.TeleBot(token)
 my_id = '6094444931'
-parrot = False
 
 
 #tiktok api
@@ -14,6 +14,28 @@ headers = {
 	"X-RapidAPI-Key": "986202cc54mshf3e91f00bf51e4ap1dcfb5jsn9a1fc2650736",
 	"X-RapidAPI-Host": "tiktok-video-no-watermark2.p.rapidapi.com"
 }
+
+def is_action(message):
+    return data.read_json()[str(message.chat.id)]['action']
+
+def is_img(message):
+    if is_action(message) == 'img_gen':
+        return True
+
+@bot.message_handler(content_types=['text'], func=is_img)
+def img_gen_send(message):
+    print(True)
+    id = message.chat.id
+    bot.send_message(id, 'Обработка запроса⏳')
+    try:
+        bot.send_photo(id, img_generation(message.text))
+    except:
+        try:
+            bot.send_photo(id, 'output.jpg')
+        except:
+            bot.send_message(id, 'На сервере произошла ошибка. Попробуйте повторить😬')
+    data.del_action(str(message.chat.id))
+
 
 @bot.message_handler(content_types=['photo'])
 def photo_id(message):
@@ -60,6 +82,15 @@ def stop(message):
     sleep(0.4)
     bot.send_sticker(message.chat.id, 'CAACAgIAAxkBAAECd6hlfXoWMDN-7i0sI6WLXDYDgTTGlQACMBoAAg-jeUrvQYdTvbPRPTME')
     bot.stop_bot()
+
+
+# kandinsky
+@bot.message_handler(commands=['image'])
+def generation(message):
+    bot.send_message(message.chat.id, 'Отправь мне текстовый запрос для генерации картинки🆒')
+    d = data.read_json()
+    d[str(message.chat.id)]['action'] = 'img_gen'
+    data.write_json(d)
 
 
 # parrot command
@@ -127,8 +158,7 @@ def spy(message):
 
 @bot.message_handler(content_types=['text'], func=data.is_parrot)
 def repeat_message(message):
-        bot.send_message(message.chat.id, message.text)
-
+    bot.send_message(message.chat.id, message.text)
 
 
 
@@ -140,6 +170,8 @@ def sticker(message):
         bot.send_sticker(message.chat.id, message.sticker.file_id)
 
 
-
+@bot.message_handler(content_types=['text'])
+def delete(message):
+    data.del_action(str(message.chat.id))
 
 bot.polling(none_stop=True)
